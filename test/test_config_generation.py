@@ -24,10 +24,6 @@ class TestConfigGeneration(unittest.TestCase):
             'terraform', 'apply',
             '-var', 'defaults_vcl_recv_condition=test-cond',
             '-var', 'defaults_backend_name=test-backend',
-            '-var', 'defaults_backend_host=test-host',
-            '-var', 'ssl_ca_cert=line 1\nline 2\nline 3\n',
-            '-var', 'ssl_check_cert=never',
-            '-var', 'ssl_sni_hostname=test-sni.hostname',
             '-var', 'defaults_s3_bucket_name=test-bucket',
             '-var', 'defaults_aws_access_key_id=JKCAUEFV2ONFFOFMSSLA',
             '-var', 'defaults_aws_secret_access_key=P2WPSu68Bfl89j72vT+bXYZB7SjlOwhT4whqt27',
@@ -42,126 +38,8 @@ class TestConfigGeneration(unittest.TestCase):
                 if \( req.backend == F_default_backend && \( test-cond \) \) \{
                     set req\.backend \= test-backend\;
                     set req\.http\.Date \= now\;
-                    set req\.http\.host \= "test-host"\;
+                    set req\.http\.host \= "test-bucket\.s3\.amazonaws\.com"\;
                     set req\.http\.Authorization \= "AWS JKCAUEFV2ONFFOFMSSLA\:" digest\.hmac_sha1_base64\("P2WPSu68Bfl89j72vT\+bXYZB7SjlOwhT4whqt27", if\(req\.request \=\= "HEAD", "GET", req\.request\) LF LF LF req\.http\.Date LF "\/test-bucket" req\.url\.path\)\;
-                \}
-            '''), re.X)
-        )
-
-    def test_backend_defaults(self):
-        self.assertRegexpMatches(
-            self.output,
-            re.compile(optional_whitespace(r'''
-                defaults_vcl_backend =
-                backend test-backend \{
-                    \.connect_timeout = 5s ;
-                    \.dynamic = true ;
-                    \.first_byte_timeout = 20s ;
-                    \.between_bytes_timeout = 20s ;
-                    \.max_connections = 1000 ;
-                    \.port = "443" ;
-                    \.host = "test-host" ;
-                    \.ssl = true ;
-                    \.ssl_cert_hostname = "test-host" ;
-                    \.ssl_check_cert = always ;
-                    \.probe = \{
-                        \.request = "HEAD \s /internal/healthcheck HTTP/1.1" \s "Connection: \s close";
-                        \.window = 2 ;
-                        \.threshold = 1 ;
-                        \.timeout = 5s ;
-                        \.initial = 1 ;
-                        \.interval = 60s ;
-                        \.dummy = true ;
-                    \}
-                \}
-            '''), re.X)
-        )
-
-    def test_ssl_ca_cert(self):
-        self.assertRegexpMatches(
-            self.output,
-            re.compile(optional_whitespace(r'''
-                ssl_ca_cert_vcl_backend =
-                backend dummy-backend \{
-                    \.connect_timeout = 5s ;
-                    \.dynamic = true ;
-                    \.first_byte_timeout = 20s ;
-                    \.between_bytes_timeout = 20s ;
-                    \.max_connections = 1000 ;
-                    \.port = "443" ;
-                    \.host = "dummy-host" ;
-                    \.ssl = true ;
-                    \.ssl_cert_hostname = "dummy-host" ;
-                    \.ssl_ca_cert = \{"line 1\nline 2\nline 3\n"\} ;
-                    \.ssl_check_cert = always ;
-                    \.probe = \{
-                        \.request = "HEAD \s /internal/healthcheck HTTP/1.1" \s "Connection: \s close";
-                        \.window = 2 ;
-                        \.threshold = 1 ;
-                        \.timeout = 5s ;
-                        \.initial = 1 ;
-                        \.interval = 60s ;
-                        \.dummy = true ;
-                    \}
-                \}
-            '''), re.X)
-        )
-
-    def test_ssl_check_cert_never(self):
-        self.assertRegexpMatches(
-            self.output,
-            re.compile(optional_whitespace(r'''
-                ssl_check_cert_vcl_backend =
-                backend dummy-backend \{
-                    \.connect_timeout = 5s ;
-                    \.dynamic = true ;
-                    \.first_byte_timeout = 20s ;
-                    \.between_bytes_timeout = 20s ;
-                    \.max_connections = 1000 ;
-                    \.port = "443" ;
-                    \.host = "dummy-host" ;
-                    \.ssl = true ;
-                    \.ssl_cert_hostname = "dummy-host" ;
-                    \.ssl_check_cert = never ;
-                    \.probe = \{
-                        \.request = "HEAD \s /internal/healthcheck HTTP/1.1" \s "Connection: \s close";
-                        \.window = 2 ;
-                        \.threshold = 1 ;
-                        \.timeout = 5s ;
-                        \.initial = 1 ;
-                        \.interval = 60s ;
-                        \.dummy = true ;
-                    \}
-                \}
-            '''), re.X)
-        )
-
-    def test_ssl_sni_hostname(self):
-        self.assertRegexpMatches(
-            self.output,
-            re.compile(optional_whitespace(r'''
-                ssl_sni_hostname_vcl_backend =
-                backend dummy-backend \{
-                    \.connect_timeout = 5s ;
-                    \.dynamic = true ;
-                    \.first_byte_timeout = 20s ;
-                    \.between_bytes_timeout = 20s ;
-                    \.max_connections = 1000 ;
-                    \.port = "443" ;
-                    \.host = "dummy-host" ;
-                    \.ssl = true ;
-                    \.ssl_sni_hostname = "test-sni.hostname" ;
-                    \.ssl_cert_hostname = "dummy-host" ;
-                    \.ssl_check_cert = always ;
-                    \.probe = \{
-                        \.request = "HEAD \s /internal/healthcheck HTTP/1.1" \s "Connection: \s close";
-                        \.window = 2 ;
-                        \.threshold = 1 ;
-                        \.timeout = 5s ;
-                        \.initial = 1 ;
-                        \.interval = 60s ;
-                        \.dummy = true ;
-                    \}
                 \}
             '''), re.X)
         )
