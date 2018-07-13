@@ -1,5 +1,5 @@
 locals {
-  backend_host = "${var.s3_bucket_name}.s3.amazonaws.com"
+  backend_host = "s3.amazonaws.com"
 }
 
 data "template_file" "vcl_recv" {
