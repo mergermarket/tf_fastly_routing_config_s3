@@ -27,4 +27,5 @@ module "acuris_apps_config_vcl_backend" {
 
   backend_name = "${var.backend_name}"
   backend_host = "${local.backend_host}"
+  healthcheck_path = "/"
 }
