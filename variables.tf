@@ -22,3 +22,8 @@ variable "aws_secret_access_key" {
   description = "AWS_SECRET_ACCESS_KEY required to access the bucket"
   type        = "string"
 }
+
+variable "region" {
+  type    = "string"
+  default = "eu-west-1"
+}
